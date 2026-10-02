@@ -3,10 +3,11 @@ import SwiftUI
 
 /// Affiche les événements dans le notch, puis le referme.
 /// Un nouvel événement remplace tout de suite celui affiché ; en rafale, chacun reste visible au moins `minimumDisplay`.
+/// Tant que la souris est sur la forme, le temps s'arrête et rien ne remplace l'événement affiché.
 @MainActor
 final class NotchController {
     private let closeAnimationDuration: Duration = .milliseconds(600)
-    private let minimumDisplay: Duration = .milliseconds(1500)
+    private let minimumDisplay = 1.5
     /// Au-delà, les plus anciens en attente sont abandonnés (ils seraient périmés).
     private let maxPending = 5
 
@@ -35,6 +36,7 @@ final class NotchController {
     func show(_ event: NoticeEvent) {
         pending.append(event)
         if pending.count > maxPending { pending.removeFirst() }
+        model.pendingCount = pending.count
         sleepTask?.cancel() // l'événement affiché passe au temps minimal
         guard runTask == nil else { return } // la boucle en cours prendra l'événement
         runTask = Task {
@@ -48,8 +50,9 @@ final class NotchController {
     private func runQueue() async {
         while !pending.isEmpty {
             let event = pending.removeFirst()
+            model.pendingCount = pending.count
             guard let geometry = NotchGeometry.current() else { continue }
-            sounds.play(event.kind, volumeScale: event.isCompact ? 0.5 : 1)
+            sounds.play(event.kind, volumeScale: event.isCompact || event.isIdleReminder ? 0.5 : 1)
 
             let panel = self.panel ?? makePanel()
             self.panel = panel
@@ -57,13 +60,14 @@ final class NotchController {
             model.notchSize = CGSize(width: geometry.width, height: geometry.height)
             model.event = event
             model.displaySeconds = event.displaySeconds(scale: Preferences.duration.scale)
+            model.isDetailed = Preferences.layout == .detailed
             model.animator = NotiboyData.shared.flatMap { NotiboyAnimator(data: $0, name: event.kind.notiboyAnimation) }
             model.animationStart = Date()
             panel.orderFrontRegardless()
             model.isOpen = true
             startMouseTracking()
 
-            await waitWhileShown(since: .now)
+            await waitWhileShown()
         }
         model.isOpen = false
         stopMouseTracking()
@@ -77,16 +81,24 @@ final class NotchController {
     }
 
     /// Seul, l'événement reste son temps complet ; si un autre attend, seulement `minimumDisplay` (pour avoir le temps de le voir).
-    /// Un geste de fermeture coupe court. L'échéance est recalculée à chaque réveil (`show`, geste).
-    private func waitWhileShown(since shownAt: ContinuousClock.Instant) async {
+    /// Pendant le survol, le temps ne compte pas et rien ne remplace l'événement. Un geste de fermeture coupe court.
+    /// L'échéance est recalculée à chaque réveil (`show`, geste, début ou fin du survol).
+    private func waitWhileShown() async {
         dismissed = false
+        var elapsed = 0.0 // temps affiché hors survol
         while !dismissed {
-            let end = shownAt + (pending.isEmpty ? .seconds(model.displaySeconds) : minimumDisplay)
-            guard ContinuousClock.now < end else { return }
-            let sleep = Task { _ = try? await Task.sleep(until: end, clock: .continuous) }
+            let left = (pending.isEmpty ? model.displaySeconds : minimumDisplay) - elapsed
+            let running = !model.isHovered
+            guard left > 0 || !running else { return }
+            model.countdown = CountdownState(fraction: max(0, min(left / model.displaySeconds, 1)),
+                                             seconds: max(0, left), running: running)
+            let start = Date()
+            // Pendant le survol, pas d'échéance : la fin du survol réveille.
+            let sleep = Task { _ = try? await Task.sleep(for: .seconds(running ? left : 3600)) }
             sleepTask = sleep
             await sleep.value
             sleepTask = nil
+            if running { elapsed += Date().timeIntervalSince(start) }
         }
     }
 
@@ -103,6 +115,7 @@ final class NotchController {
     private func stopMouseTracking() {
         mouseTask?.cancel()
         mouseTask = nil
+        model.isHovered = false
         panel?.ignoresMouseEvents = true
     }
 
@@ -117,6 +130,10 @@ final class NotchController {
         let onShape = shape.contains(NSEvent.mouseLocation)
         if panel.ignoresMouseEvents == onShape {
             panel.ignoresMouseEvents = !onShape
+        }
+        if model.isHovered != onShape {
+            model.isHovered = onShape
+            sleepTask?.cancel() // met en pause ou relance le temps
         }
     }
 

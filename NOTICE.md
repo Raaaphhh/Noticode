@@ -8,6 +8,9 @@ Il est distribué sans aucune garantie.
 
 Code source : <https://github.com/Raaaphhh/Noticode>
 
+Noticode est un projet indépendant, non affilié à Anthropic ni approuvé par Anthropic.
+« Claude » et « Claude Code » sont des marques d'Anthropic.
+
 ## Code d'autres projets
 
 ### Bible Strong Avatar Lab — AGPL-3.0

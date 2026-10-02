@@ -1,36 +1,44 @@
 import SwiftUI
 
-/// Forme noire qui part de la taille du notch et s'agrandit en « ailes » de part et d'autre :
-/// Notiboy et le titre à gauche du notch physique, le projet à droite, le détail éventuel dessous.
-/// Les ailes sont symétriques (le notch reste centré) et prennent la largeur de leur texte ; la hauteur est mesurée.
-/// En mode auto (`isCompact`) : ailes seules, plus basses, badge « AUTO » à droite, halo et contour jaunes.
+/// Forme noire qui part de la taille du notch et s'agrandit en « ailes » de part et d'autre, à la hauteur du notch :
+/// Notiboy et un mot coloré à gauche du notch physique, le projet à droite (« AUTO » en mode auto).
+/// Quand l'utilisateur doit agir (autorisation, question, erreur), une ligne de détail s'ajoute dessous ;
+/// elle se déplie sur 3 lignes au survol (ou toujours, réglage « Taille : détaillée »).
+/// Le bord du bas se vide vers le centre pendant le temps d'affichage.
 struct NotchView: View {
     let model: NotchModel
-    @State private var openHeight: CGFloat = 60
+    @State private var openHeight: CGFloat = 32
     @State private var titleWidth: CGFloat = 0
     @State private var rightWidth: CGFloat = 0
 
-    private var isCompact: Bool { model.event?.isCompact == true }
-    private var avatarSize: CGFloat { isCompact ? 30 : 40 }
-    private let outerInset: CGFloat = 14
-    private let notchGap: CGFloat = 10
-    private let maxWingText: CGFloat = 190
+    private let avatarSize: CGFloat = 24
+    private let leftInset: CGFloat = 10
+    private let rightInset: CGFloat = 12
+    private let notchGap: CGFloat = 8
+    private let maxWingText: CGFloat = 150
+    /// Largeur minimale quand une ligne de détail s'affiche.
+    private let detailWidth: CGFloat = 400
+    /// Rayons de la forme (haut : raccord avec le bord de l'écran), ouverte et fermée.
+    private let openRadii = (top: CGFloat(10), bottom: CGFloat(14))
+    private let closedRadii = (top: CGFloat(6), bottom: CGFloat(10))
 
     private var notch: CGSize { model.notchSize }
+    private var rowHeight: CGFloat { max(notch.height, 32) }
     private var wingWidth: CGFloat {
-        let left = avatarSize + 8 + min(titleWidth, maxWingText)
-        let right = min(rightWidth, maxWingText)
-        return outerInset + max(left, right) + notchGap
+        let left = leftInset + avatarSize + 6 + min(titleWidth, maxWingText)
+        let right = rightInset + min(rightWidth, maxWingText)
+        return max(left, right) + notchGap
     }
-    /// Un détail a besoin d'un peu de largeur pour rester lisible.
     private var openWidth: CGFloat {
-        if model.event?.kind == .welcome { return notch.width + 60 }
+        guard let event = model.event else { return notch.width }
+        if event.kind == .welcome { return notch.width + 60 }
         let wings = notch.width + 2 * wingWidth
-        return model.event?.detail.isEmpty == false && !isCompact ? max(wings, 440) : wings
+        return event.showsDetail ? max(wings, detailWidth) : wings
     }
 
     var body: some View {
         let isOpen = model.isOpen
+        let radii = isOpen ? openRadii : closedRadii
         VStack(spacing: 0) {
             if let event = model.event {
                 Group {
@@ -51,20 +59,28 @@ struct NotchView: View {
                height: isOpen ? openHeight : notch.height,
                alignment: .top)
         .clipped()
+        .overlay(alignment: .bottom) {
+            if let event = model.event, event.kind != .welcome {
+                Countdown(state: model.countdown, color: event.color)
+                    .id(model.countdown)
+                    .padding(.horizontal, openRadii.bottom)
+                    .opacity(isOpen ? 1 : 0)
+            }
+        }
         .onGeometryChange(for: CGSize.self) { $0.size } action: {
-            model.shapeSize = CGSize(width: $0.width + 28, height: $0.height)
+            model.shapeSize = CGSize(width: $0.width + 2 * openRadii.top, height: $0.height)
         }
         .background(
-            // Les coins du haut débordent de `topRadius` de chaque côté pour se raccorder au bord de l'écran.
-            NotchShape(topRadius: isOpen ? 14 : 6, bottomRadius: isOpen ? 20 : 10)
+            // Les coins du haut débordent de `top` de chaque côté pour se raccorder au bord de l'écran.
+            NotchShape(topRadius: radii.top, bottomRadius: radii.bottom)
                 .fill(.black)
-                .padding(.horizontal, isOpen ? -14 : -6)
+                .padding(.horizontal, -radii.top)
         )
         .overlay {
-            if isCompact {
-                NotchShape(topRadius: isOpen ? 14 : 6, bottomRadius: isOpen ? 20 : 10, closesTop: false)
-                    .stroke(NoticeKind.autoModeColor.opacity(isOpen ? 0.7 : 0), lineWidth: 1.5)
-                    .padding(.horizontal, isOpen ? -14 : -6)
+            if model.event?.isCompact == true {
+                NotchShape(topRadius: radii.top, bottomRadius: radii.bottom, closesTop: false)
+                    .stroke(NoticeKind.autoModeColor.opacity(isOpen ? 0.75 : 0), lineWidth: 1.5)
+                    .padding(.horizontal, -radii.top)
             }
         }
         .animation(.spring(response: 0.45, dampingFraction: 0.8), value: isOpen)
@@ -73,110 +89,122 @@ struct NotchView: View {
     }
 
     private func content(for event: NoticeEvent) -> some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 0) {
             HStack(spacing: 0) {
-                HStack(spacing: 8) {
+                HStack(spacing: 6) {
                     avatar(for: event)
-                    title(for: event)
+                    Text(event.title)
+                        .font(.system(size: 12.5, weight: .semibold, design: .rounded))
+                        .foregroundStyle(event.color)
+                        .lineLimit(1)
+                        .idealWidth { titleWidth = $0 }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.leading, outerInset)
+                .padding(.leading, leftInset)
                 Color.clear.frame(width: notch.width + 2 * notchGap) // notch physique
-                Group {
-                    if event.isCompact {
-                        autoBadge
-                    } else if !event.project.isEmpty {
-                        project(for: event)
-                    }
-                }
-                .frame(maxWidth: .infinity, alignment: .trailing)
-                    .padding(.trailing, outerInset)
+                rightWing(for: event)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .padding(.trailing, rightInset)
             }
-            .frame(height: max(notch.height, avatarSize + 4))
-            if !event.isCompact {
-                Group {
-                    if !event.detail.isEmpty {
-                        detail(for: event)
-                    }
-                    Countdown(seconds: model.displaySeconds, color: event.kind.color)
-                }
-                .padding(.horizontal, outerInset)
+            .frame(height: rowHeight)
+            if event.showsDetail {
+                detail(for: event)
+                    .padding(.horizontal, 14)
+                    .padding(.bottom, 9)
             }
         }
-        .foregroundStyle(.white)
-        .padding(.bottom, event.isCompact ? 4 : 10)
-        .id(model.animationStart) // nouvel événement = nouveau compte à rebours
+        .id(model.animationStart) // nouvel événement = textes remesurés
     }
 
     @ViewBuilder
     private func avatar(for event: NoticeEvent) -> some View {
         if let animator = model.animator {
             NotiboyAvatar(animator: animator, start: model.animationStart, panelTopLeft: model.panelTopLeft,
-                          size: avatarSize, color: event.isCompact ? NoticeKind.autoModeColor : event.kind.color,
-                          haloRadius: avatarSize / 2 + 4)
+                          size: avatarSize, color: event.isCompact ? NoticeKind.autoModeColor : event.color,
+                          haloOpacity: 0.45, haloRadius: avatarSize / 2 + 3)
         }
     }
 
-    private func title(for event: NoticeEvent) -> some View {
-        HStack(spacing: 5) {
-            Image(systemName: event.kind.symbol)
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(event.kind.color)
-            Text(event.title)
-                .font(.system(size: 14, weight: .semibold))
+    private func rightWing(for event: NoticeEvent) -> some View {
+        HStack(spacing: 6) {
+            if event.isCompact {
+                AutoBadge()
+            } else if !event.project.isEmpty {
+                HStack(spacing: 5) {
+                    Image(systemName: "folder.fill")
+                        .font(.system(size: 10))
+                        .opacity(0.75)
+                    Text(event.project)
+                }
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(.white.opacity(0.8))
+            }
+            if model.pendingCount > 0 {
+                Text("+\(model.pendingCount)")
+                    .font(.system(size: 10.5, weight: .semibold))
+                    .monospacedDigit()
+                    .foregroundStyle(.white.opacity(0.55))
+            }
         }
-        .lineLimit(1)
-        .idealWidth { titleWidth = $0 }
-    }
-
-    private func project(for event: NoticeEvent) -> some View {
-        HStack(spacing: 4) {
-            Image(systemName: "folder.fill")
-            Text(event.project)
-        }
-        .font(.system(size: 12, weight: .medium))
-        .foregroundStyle(.white.opacity(0.55))
         .lineLimit(1)
         .idealWidth { rightWidth = $0 }
     }
 
-    private var autoBadge: some View {
-        AutoBadge().idealWidth { rightWidth = $0 }
+    /// Ligne de détail : étiquette de l'outil (autorisation) puis le texte, sur 1 ligne ou 3 dépliée.
+    private func detail(for event: NoticeEvent) -> some View {
+        let expanded = model.isHovered || model.isDetailed
+        return HStack(alignment: .firstTextBaseline, spacing: 7) {
+            if !event.tool.isEmpty {
+                Text(event.tool)
+                    .font(.system(size: 10.5, weight: .semibold, design: .monospaced))
+                    .foregroundStyle(event.color)
+                    .padding(.horizontal, 5)
+                    .padding(.vertical, 2)
+                    .background(RoundedRectangle(cornerRadius: 4).fill(event.color.opacity(0.18)))
+                    .fixedSize()
+            }
+            detailText(for: event)
+                .lineLimit(expanded ? 3 : 1)
+                // Chemin coupé au début : le nom du fichier reste visible.
+                .truncationMode(event.detailStyle == .path && !expanded ? .head : .tail)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
     }
 
-    private func detail(for event: NoticeEvent) -> some View {
-        Text(event.detail)
-            .font(.system(size: 12, design: event.detailIsCode ? .monospaced : .default))
-            .foregroundStyle(.white.opacity(0.85))
-            .lineLimit(3)
-            .truncationMode(.tail)
-            .fixedSize(horizontal: false, vertical: true)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(.white.opacity(0.07))
-                    .strokeBorder(.white.opacity(0.08))
-            )
-            .overlay(alignment: .leading) {
-                // Liseré de la couleur de l'événement.
-                Capsule().fill(event.kind.color).frame(width: 3).padding(.vertical, 8)
-            }
+    private func detailText(for event: NoticeEvent) -> Text {
+        switch event.detailStyle {
+        case .text:
+            return Text(event.detail)
+                .font(.system(size: 12))
+                .foregroundStyle(.white.opacity(0.88))
+        case .code:
+            return Text(event.detail)
+                .font(.system(size: 11.5, design: .monospaced))
+                .foregroundStyle(.white.opacity(0.88))
+        case .path:
+            let path = event.detail as NSString
+            let folder = path.deletingLastPathComponent
+            let dir = Text(verbatim: folder.isEmpty ? "" : folder.hasSuffix("/") ? folder : folder + "/")
+                .foregroundStyle(.white.opacity(0.45))
+            let file = Text(verbatim: path.lastPathComponent)
+                .fontWeight(.semibold)
+                .foregroundStyle(.white)
+            return Text("\(dir)\(file)")
+                .font(.system(size: 11.5, design: .monospaced))
+        }
     }
 }
 
 /// Rappel du mode auto, comme le « auto mode » jaune de Claude Code (aussi dans l'aide des Réglages).
 struct AutoBadge: View {
-    var fontSize: CGFloat = 11
+    var fontSize: CGFloat = 10
 
     var body: some View {
         Text("AUTO")
             .font(.system(size: fontSize, weight: .bold))
+            .tracking(0.2)
             .foregroundStyle(NoticeKind.autoModeColor)
-            .padding(.horizontal, fontSize * 0.64)
-            .padding(.vertical, fontSize * 0.18)
-            .background(Capsule().fill(NoticeKind.autoModeColor.opacity(0.15)))
             .lineLimit(1)
     }
 }

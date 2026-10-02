@@ -1,6 +1,12 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+// Copyright (c) 2026 Raphaël Descamps
+// Port Swift du moteur AvatarProceduralEngine (@bible-strong/avatar-core),
+// (c) Stéphane Montlouis-Calixte, AGPL-3.0-only, commit 79fe9ba06e48.
+// Modifié en septembre-octobre 2026 pour Noticode. Voir NOTICE.md.
+
 import Foundation
 
-// Port Swift du moteur 3D de Notiboy (export JS fourni par l'utilisateur) : maths 3D.
+// Maths 3D du moteur de Notiboy (port du moteur de Bible Strong Avatar Lab, voir l'en-tête).
 // Seul ce qu'utilise Notiboy est porté : des « cubes arrondis » (superellipsoïdes) pour la tête et les mains.
 
 typealias Vec3 = SIMD3<Double>

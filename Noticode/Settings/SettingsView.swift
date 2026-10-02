@@ -5,6 +5,7 @@ struct SettingsView: View {
 
     @AppStorage(Preferences.volumeKey) private var volume = Preferences.defaultVolume
     @AppStorage(Preferences.durationKey) private var duration = DisplayDuration.normal
+    @AppStorage(Preferences.layoutKey) private var layout = NotchLayout.compact
     @AppStorage(Preferences.launchOnSessionStartKey) private var launchOnSessionStart = false
     @State private var hooksInstalled = HooksInstaller.isInstalled
 
@@ -36,11 +37,20 @@ struct SettingsView: View {
                 }
             }
 
-            Section("Affichage") {
+            Section {
                 Picker("Durée des notifications", selection: $duration) {
                     ForEach(DisplayDuration.allCases) { Text($0.label).tag($0) }
                 }
                 .pickerStyle(.segmented)
+                Picker("Taille", selection: $layout) {
+                    ForEach(NotchLayout.allCases) { Text($0.label).tag($0) }
+                }
+                .pickerStyle(.segmented)
+            } header: {
+                Text("Affichage")
+            } footer: {
+                Text("Compacte : la commande ou la question tient sur une ligne, survole le notch pour la lire en entier (le temps s'arrête). Détaillée : jusqu'à 3 lignes d'office.")
+                    .foregroundStyle(.secondary)
             }
 
             Section {

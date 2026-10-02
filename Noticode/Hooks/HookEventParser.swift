@@ -16,17 +16,23 @@ extension NoticeEvent {
         case "Stop":
             self.init(kind: .finished, project: project, sessionID: sessionID, autoMode: autoMode)
         case "StopFailure":
-            let error = Self.firstText(in: json, keys: ["error_details", "message", "error_type"])
+            let error = Self.errorMessage(type: json["error_type"] as? String)
+                ?? Self.firstText(in: json, keys: ["error_details", "message", "error_type"])
             self.init(kind: .error, project: project, detail: error, sessionID: sessionID, autoMode: autoMode)
         case "PermissionRequest":
             // Arrive tout de suite, contrairement à la notification `permission_prompt`.
             let tool = json["tool_name"] as? String ?? ""
             let input = json["tool_input"] as? [String: Any] ?? [:]
+            let path = Self.firstText(in: input, keys: ["file_path", "notebook_path", "path"])
+            let detail = path.isEmpty
+                ? Self.firstText(in: input, keys: ["command", "url", "pattern", "query", "description"])
+                : (path as NSString).abbreviatingWithTildeInPath
             self.init(kind: .question,
-                      title: tool.isEmpty ? "Autorisation requise" : "Autorisation : \(tool)",
+                      title: "Autoriser ?",
                       project: project,
-                      detail: Self.firstText(in: input, keys: ["command", "file_path", "path", "url", "pattern", "query", "description"]),
-                      detailIsCode: true,
+                      detail: detail,
+                      detailStyle: path.isEmpty ? .code : .path,
+                      tool: tool.isEmpty ? "Outil" : tool,
                       sessionID: sessionID, autoMode: autoMode)
         case "Notification":
             // `permission_prompt` est déjà couvert par PermissionRequest (sinon double affichage) ;
@@ -43,6 +49,19 @@ extension NoticeEvent {
                       isIdleReminder: isIdleReminder)
         default:
             return nil
+        }
+    }
+
+    /// Phrase en français pour les erreurs courantes de `StopFailure` ; nil si le type est inconnu (on garde le message brut).
+    private static func errorMessage(type: String?) -> String? {
+        switch type {
+        case "rate_limit": "Limite d'utilisation atteinte, Claude reprendra après la réinitialisation."
+        case "overloaded", "overloaded_error": "Serveurs surchargés, réessaie dans un moment."
+        case "authentication_failed", "authentication_error": "Connexion à Claude refusée : reconnecte-toi."
+        case "billing_error": "Problème de facturation sur le compte."
+        case "server_error", "api_error": "Erreur du serveur de Claude."
+        case "max_output_tokens": "Réponse coupée : longueur maximale atteinte."
+        default: nil
         }
     }
 

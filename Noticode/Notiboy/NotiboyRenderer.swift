@@ -1,3 +1,9 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+// Copyright (c) 2026 Raphaël Descamps
+// Port Swift du moteur AvatarProceduralEngine (@bible-strong/avatar-core),
+// (c) Stéphane Montlouis-Calixte, AGPL-3.0-only, commit 79fe9ba06e48.
+// Modifié en septembre-octobre 2026 pour Noticode. Voir NOTICE.md.
+
 import CoreGraphics
 import Foundation
 

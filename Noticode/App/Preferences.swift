@@ -6,6 +6,7 @@ enum Preferences {
     static let volumeKey = "soundVolume"
     static let durationKey = "displayDuration"
     static let launchOnSessionStartKey = "launchOnSessionStart"
+    static let layoutKey = "notchLayout"
 
     static let defaultVolume = 0.5
 
@@ -16,6 +17,10 @@ enum Preferences {
 
     static var duration: DisplayDuration {
         DisplayDuration(rawValue: UserDefaults.standard.string(forKey: durationKey) ?? "") ?? .normal
+    }
+
+    static var layout: NotchLayout {
+        NotchLayout(rawValue: UserDefaults.standard.string(forKey: layoutKey) ?? "") ?? .compact
     }
 
     static var launchOnSessionStart: Bool {
@@ -42,6 +47,20 @@ enum DisplayDuration: String, CaseIterable, Identifiable {
         case .short: 0.6
         case .normal: 1
         case .long: 1.6
+        }
+    }
+}
+
+/// Taille du notch : compacte (détail sur une ligne, déplié au survol) ou détaillée (détail toujours sur 3 lignes).
+enum NotchLayout: String, CaseIterable, Identifiable {
+    case compact, detailed
+
+    var id: Self { self }
+
+    var label: String {
+        switch self {
+        case .compact: "Compacte"
+        case .detailed: "Détaillée"
         }
     }
 }

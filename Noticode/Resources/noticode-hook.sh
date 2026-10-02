@@ -13,8 +13,13 @@ fi
 
 # L'app ne répond pas : au démarrage d'une session, on l'ouvre si le réglage est actif
 # (fichier launch-app présent). `open` est détaché : même lent (1er lancement), il ne fait pas attendre.
+# SessionStart revient aussi après /clear, /compact et /resume : on n'ouvre que pour un vrai démarrage.
 case "$INPUT" in
-    *'"hook_event_name":"SessionStart"'* | *'"hook_event_name": "SessionStart"'*)
+    *'"hook_event_name":"SessionStart"'* | *'"hook_event_name": "SessionStart"'*) ;;
+    *) exit 0 ;;
+esac
+case "$INPUT" in
+    *'"source":"startup"'* | *'"source": "startup"'*)
         APP=$(cat "$DIR/launch-app" 2>/dev/null)
         if [ -n "$APP" ] && [ -d "$APP" ]; then
             ( /usr/bin/open -g "$APP" >/dev/null 2>&1 & )

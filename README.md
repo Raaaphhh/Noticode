@@ -11,11 +11,13 @@ Petite app macOS qui affiche dans le **notch** ce que fait [Claude Code](https:/
 
 ## Ce que montre le notch
 
-- **Terminé** : Claude a fini de répondre.
-- **Question** : Claude te pose une question. Après un moment sans réponse, rappel **En attente**.
-- **Autorisation** : Claude veut utiliser un outil ; la commande ou le fichier s'affiche dessous.
-- **Erreur** : la réponse a échoué (limite atteinte, erreur réseau…).
-- **Mode auto** : dans une session en mode `auto`, « Terminé », « Erreur » et le rappel s'affichent en petit, en jaune, avec un son plus discret.
+Le notch s'élargit à peine, à sa propre hauteur : Notiboy et un mot de couleur à gauche, le projet à droite (« +2 » si d'autres notifications attendent). Quand tu dois agir, une ligne de détail s'ajoute dessous. Le bord du bas se vide pendant le temps d'affichage ; garde la souris sur le notch pour arrêter le temps et lire le détail en entier.
+
+- **Terminé** (vert) : Claude a fini de répondre.
+- **Autoriser ?** (ambre) : Claude veut utiliser un outil ; l'outil (Bash, Edit…) et la commande ou le fichier s'affichent dessous.
+- **Question** (bleu) : Claude te pose une question. Après un moment sans réponse, rappel **En attente** (gris, sans détail).
+- **Erreur** (corail) : la réponse a échoué (limite atteinte, erreur réseau…), expliqué en une phrase.
+- **Mode auto** : dans une session en mode `auto`, « Terminé », « Erreur » et le rappel s'affichent sans détail, avec un contour jaune, « AUTO » à droite et un son plus discret.
 
 Sur un Mac sans notch, la même chose s'affiche en haut au centre de l'écran.
 
@@ -43,7 +45,8 @@ Icône dans la barre des menus › **Réglages…** :
 
 - **Volume** des sons, et **Couper le son** directement dans le menu ;
 - **Durée** des notifications : courte, normale ou longue ;
-- **Ouvrir Noticode au démarrage d'une session Claude Code** : si l'app est fermée, elle s'ouvre toute seule ;
+- **Taille** : compacte (détail sur une ligne, déplié au survol) ou détaillée (jusqu'à 3 lignes d'office) ;
+- **Ouvrir Noticode au démarrage d'une session Claude Code** : si l'app est fermée, elle s'ouvre toute seule (nouvelle session seulement, pas après `/clear`, `/compact` ou `/resume`) ;
 - onglet **Aide** : légende des notchs, état des hooks, dépannage.
 
 ## Mise à jour
@@ -104,5 +107,7 @@ Le code de l'app est dans `Noticode/` (`App/`, `Hooks/`, `Notch/`, `Notiboy/`, `
 
 - Notiboy est animé par un port Swift du moteur de [Bible Strong Avatar Lab](https://github.com/smontlouis/bible-strong-avatar-lab) (AGPL-3.0), d'où la licence du projet.
 - Le serveur des hooks et les animations du notch s'inspirent de [Coucou](https://github.com/Louis-CFM/coucou) (MIT).
+
+Noticode est un projet indépendant, non affilié à Anthropic ni approuvé par Anthropic. « Claude » et « Claude Code » sont des marques d'Anthropic.
 
 Détails dans [`NOTICE.md`](NOTICE.md).

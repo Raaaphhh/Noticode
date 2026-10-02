@@ -14,22 +14,22 @@ struct HelpView: View {
     var body: some View {
         Form {
             Section("Ce que montre le notch") {
-                row(NotchPreview(kind: .finished, title: "Terminé"),
+                row(NotchPreview(title: "Terminé", color: NoticeKind.finished.color),
                     "Claude a fini de répondre.")
-                row(NotchPreview(kind: .question, title: "Question"),
-                    "Claude te pose une question.")
-                row(NotchPreview(kind: .question, title: "Autorisation"),
-                    "Claude demande la permission d'utiliser un outil (la commande s'affiche dessous).")
-                row(NotchPreview(kind: .question, title: "En attente"),
+                row(NotchPreview(title: "Question", color: NoticeKind.question.color),
+                    "Claude te pose une question (le texte s'affiche dessous).")
+                row(NotchPreview(title: "Autoriser ?", color: NoticeKind.permissionColor),
+                    "Claude demande la permission d'utiliser un outil (l'outil et la commande s'affichent dessous).")
+                row(NotchPreview(title: "En attente", color: NoticeKind.idleColor),
                     "Rappel : Claude attend ta réponse depuis un moment.")
-                row(NotchPreview(kind: .error, title: "Erreur"),
+                row(NotchPreview(title: "Erreur", color: NoticeKind.error.color),
                     "La réponse a échoué (limite atteinte, erreur réseau…).")
-                row(NotchPreview(kind: .finished, title: "Terminé", isAuto: true),
-                    "Session en mode auto : « Terminé », « Erreur » et le rappel s'affichent en petit, son plus discret.")
+                row(NotchPreview(title: "Terminé", color: NoticeKind.finished.color, isAuto: true),
+                    "Session en mode auto : « Terminé », « Erreur » et le rappel sans détail, contour jaune, son plus discret.")
             }
 
             Section("Fermer une notification") {
-                Text("Glisse vers le haut sur le notch : deux doigts sur le trackpad, ou clic maintenu puis vers le haut. Sinon il se ferme seul (durée réglable dans l'onglet Réglages).")
+                Text("Glisse vers le haut sur le notch : deux doigts sur le trackpad, ou clic maintenu puis vers le haut. Sinon il se ferme seul quand le bord du bas s'est vidé (durée réglable dans l'onglet Réglages). Garder la souris dessus arrête le temps et déplie le détail.")
             }
 
             Section {
@@ -66,8 +66,13 @@ struct HelpView: View {
             } footer: {
                 VStack(spacing: 2) {
                     Text(version)
-                    Text("© 2026 Raphaël Descamps. Logiciel libre sous licence GNU AGPL v3, sans aucune garantie.")
-                    Link("Code source", destination: URL(string: "https://github.com/Raaaphhh/Noticode")!)
+                    Text("© 2026 Raphaël Descamps. Logiciel libre : tu peux le redistribuer et le modifier selon la licence GNU AGPL v3. Fourni sans aucune garantie.")
+                    Text("Notiboy est animé par un port du moteur de Bible Strong Avatar Lab (AGPL-3.0).")
+                    Text("Projet indépendant, non affilié à Anthropic.")
+                    HStack(spacing: 12) {
+                        Link("Code source", destination: URL(string: "https://github.com/Raaaphhh/Noticode")!)
+                        Link("Licence", destination: URL(string: "https://github.com/Raaaphhh/Noticode/blob/main/LICENSE")!)
+                    }
                 }
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -98,48 +103,43 @@ struct HelpView: View {
 
 /// Petite image fixe d'un notch, pour la légende (Notiboy = icône de l'app, sans animation).
 private struct NotchPreview: View {
-    let kind: NoticeKind
     let title: String
+    let color: Color
     var isAuto = false
-
-    private var haloColor: Color { isAuto ? NoticeKind.autoModeColor : kind.color }
 
     var body: some View {
         HStack(spacing: 5) {
             Image(nsImage: NSApp.applicationIconImage)
                 .resizable()
-                .frame(width: 18, height: 18)
+                .frame(width: 16, height: 16)
                 .background(
-                    Circle().fill(RadialGradient(colors: [haloColor.opacity(0.6), .clear],
-                                                 center: .center, startRadius: 0, endRadius: 13))
+                    Circle().fill(RadialGradient(colors: [(isAuto ? NoticeKind.autoModeColor : color).opacity(0.45), .clear],
+                                                 center: .center, startRadius: 0, endRadius: 11))
                 )
-            Image(systemName: kind.symbol)
-                .font(.system(size: 9, weight: .semibold))
-                .foregroundStyle(kind.color)
             Text(title)
-                .font(.system(size: 10, weight: .semibold))
-                .foregroundStyle(.white)
+                .font(.system(size: 10, weight: .semibold, design: .rounded))
+                .foregroundStyle(color)
                 .lineLimit(1)
             Spacer(minLength: 6)
             if isAuto {
                 AutoBadge(fontSize: 8)
             } else {
                 HStack(spacing: 3) {
-                    Image(systemName: "folder.fill")
+                    Image(systemName: "folder.fill").opacity(0.75)
                     Text("demo")
                 }
                 .font(.system(size: 9, weight: .medium))
-                .foregroundStyle(.white.opacity(0.55))
+                .foregroundStyle(.white.opacity(0.8))
             }
         }
         .padding(.leading, 8)
         .padding(.trailing, 10)
-        .frame(width: 190, height: 28)
+        .frame(width: 190, height: 26)
         .background(NotchShape(topRadius: 6, bottomRadius: 10).fill(.black))
         .overlay {
             if isAuto {
                 NotchShape(topRadius: 6, bottomRadius: 10, closesTop: false)
-                    .stroke(NoticeKind.autoModeColor.opacity(0.7), lineWidth: 1)
+                    .stroke(NoticeKind.autoModeColor.opacity(0.75), lineWidth: 1)
             }
         }
     }
