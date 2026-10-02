@@ -33,10 +33,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
         // Le serveur tourne sur un thread à part : on revient sur le thread principal pour afficher.
+        // La file principale garde l'ordre d'arrivée (une `Task` par événement ne le garantit pas).
         let server = HookServer { [weak self] event in
-            Task { @MainActor in
-                guard let self else { return }
-                self.notch.show(self.sessionModes.resolve(event))
+            DispatchQueue.main.async {
+                MainActor.assumeIsolated {
+                    guard let self else { return }
+                    self.notch.show(self.sessionModes.resolve(event))
+                }
             }
         }
         server.start()

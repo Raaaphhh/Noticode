@@ -19,7 +19,12 @@ ask() {
 
 # Tout est dans une fonction appelée à la fin : avec `curl | sh`, le script entier est lu avant de commencer.
 main() {
-    [ "${1:-}" = "--dry-run" ] && DRY_RUN=1
+    # Une faute de frappe (ex. --dryrun) ne doit jamais lancer une vraie désinstallation.
+    case "$*" in
+        "") ;;
+        --dry-run) DRY_RUN=1 ;;
+        *) echo "Option inconnue : $* (seule option : --dry-run)" >&2; exit 2 ;;
+    esac
     # Fichiers et dossiers à supprimer (seulement ceux qui existent).
     targets=""
     for path in "/Applications/Noticode.app" "$HOME/Applications/Noticode.app"; do
@@ -40,17 +45,27 @@ main() {
     if [ -f "$SETTINGS" ]; then
         command -v python3 >/dev/null 2>&1 \
             || { echo "python3 introuvable : retire d'abord les hooks avec le menu de Noticode." >&2; exit 1; }
+        # Si settings.json est un lien (dotfiles), on travaille sur le vrai fichier : le lien reste intact.
+        SETTINGS=$(python3 -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "$SETTINGS") \
+            || { echo "python3 ne fonctionne pas : retire d'abord les hooks avec le menu de Noticode." >&2; exit 1; }
         snapshot=$(mktemp)
         proposed=$(mktemp)
         trap 'rm -f "$snapshot" "$proposed"' EXIT
         cp "$SETTINGS" "$snapshot"
 
-        if python3 - "$snapshot" "$proposed" <<'PY'
+        # Codes de sortie : 0 = hooks à retirer (aperçu affiché), 3 = aucun hook, autre = erreur.
+        set +e
+        python3 - "$snapshot" "$proposed" <<'PY'
 import difflib, json, sys
 
 source, output = sys.argv[1], sys.argv[2]
-with open(source, encoding="utf-8") as f:
-    settings = json.load(f)
+try:
+    with open(source, encoding="utf-8") as f:
+        settings = json.load(f)
+except (OSError, ValueError) as error:
+    sys.exit(f"settings.json illisible : {error}")
+if not isinstance(settings, dict):
+    sys.exit("settings.json : forme inattendue (pas un objet JSON)")
 
 def is_ours(hook):
     return "noticode-hook.sh" in str(hook.get("command", ""))
@@ -80,7 +95,7 @@ if isinstance(hooks, dict):
         del settings["hooks"]
 
 if not changed:
-    sys.exit(1)
+    sys.exit(3)
 
 def dump(value):
     return json.dumps(value, indent=2, ensure_ascii=False, sort_keys=True) + "\n"
@@ -93,7 +108,13 @@ with open(output, "w", encoding="utf-8") as f:
 sys.stdout.writelines(difflib.unified_diff(before.splitlines(True), after.splitlines(True),
                                            "settings.json (actuel)", "settings.json (après)"))
 PY
-        then
+        status=$?
+        set -e
+        if [ "$status" != 0 ] && [ "$status" != 3 ]; then
+            echo "Rien n'a été modifié : désinstallation arrêtée (corrige settings.json ou retire les hooks avec le menu de Noticode)." >&2
+            exit 1
+        fi
+        if [ "$status" = 0 ]; then
             echo
             echo "Modifications de $SETTINGS ci-dessus (fichier réécrit avec ses clés triées ; sauvegarde datée avant)."
             if [ "$DRY_RUN" = 1 ]; then
@@ -106,8 +127,8 @@ PY
                 cp -p "$SETTINGS" "$backup"
                 # Mêmes droits que l'original, puis remplacement en une fois (jamais de fichier incomplet).
                 temporary="$SETTINGS.noticode-tmp"
-                cp "$proposed" "$temporary"
-                chmod "$(stat -f %Lp "$SETTINGS")" "$temporary"
+                (umask 077; cp "$proposed" "$temporary")
+                chmod "$(stat -L -f %Lp "$SETTINGS")" "$temporary"
                 mv -f "$temporary" "$SETTINGS"
                 echo "Hooks retirés. Sauvegarde : $backup"
             else

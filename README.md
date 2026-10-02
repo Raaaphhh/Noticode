@@ -62,11 +62,13 @@ Les réglages et les hooks sont conservés.
 curl -fsSL https://raw.githubusercontent.com/Raaaphhh/Noticode/main/uninstall.sh | sh
 ```
 
-Pour voir d'abord ce qui serait fait, sans rien changer : `… | sh -s -- --dry-run`.
+Pour voir d'abord ce qui serait fait, sans rien changer : `… | sh -s -- --dry-run` (toute autre option est refusée).
 
 Le script :
 1. retire les hooks Noticode de `~/.claude/settings.json` après aperçu et confirmation, avec une sauvegarde datée (les autres hooks ne sont pas touchés) ;
 2. quitte l'app puis supprime, après une seconde confirmation, l'app, son dossier `~/Library/Application Support/Noticode` et ses réglages.
+
+Si `settings.json` est un lien symbolique (dotfiles), c'est le fichier pointé qui est modifié et le lien reste. Si `settings.json` est illisible (JSON invalide), le script s'arrête sans rien supprimer.
 
 Pour retirer seulement les hooks : menu de Noticode › **Retirer les hooks Claude Code…**.
 
@@ -77,6 +79,7 @@ Pour retirer seulement les hooks : menu de Noticode › **Retirer les hooks Clau
 - **Pas de rappel « En attente »** : Claude Code ne l'envoie que si tu sembles loin du terminal depuis environ une minute.
 - **`install.sh` échoue sur Xcode** : ouvre Xcode une fois, puis `sudo xcode-select -s /Applications/Xcode.app`.
 - **« Noticode.app existe mais n'est pas Noticode »** : une autre app porte ce nom dans `/Applications` ; le script ne la touche pas. Renomme-la ou déplace-la.
+- **`uninstall.sh` s'arrête sur « settings.json illisible »** : corrige le JSON de `~/.claude/settings.json` (ou retire les hooks depuis le menu de Noticode), puis relance la commande.
 - **macOS refuse d'ouvrir l'app** : elle est signée localement par ton Mac, ce qui suffit d'habitude. Sinon, clic droit sur l'app › **Ouvrir**.
 
 ## Comment ça marche

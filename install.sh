@@ -56,11 +56,17 @@ main() {
         # On ne remplace qu'une ancienne version de Noticode, jamais une autre app du même nom.
         existing=$(defaults read "$target/Contents/Info" CFBundleIdentifier 2>/dev/null || true)
         [ "$existing" = "$BUNDLE_ID" ] || fail "$target existe mais n'est pas Noticode : rien n'a été modifié."
-        pkill -x Noticode 2>/dev/null || true
-        rm -rf "$target"
         update=1
     fi
-    ditto "$built" "$target"
+    # Copie à côté d'abord : si elle échoue, l'ancienne version reste en place.
+    staging="$dest/.Noticode.app.new"
+    rm -rf "$staging"
+    ditto "$built" "$staging"
+    if [ "$update" = 1 ]; then
+        pkill -x Noticode 2>/dev/null || true
+        rm -rf "$target"
+    fi
+    mv "$staging" "$target"
     open "$target"
 
     if [ "$update" = 1 ]; then
