@@ -1,0 +1,143 @@
+#!/bin/sh
+# Désinstalle Noticode : retire ses hooks de ~/.claude/settings.json (sauvegarde datée, aperçu, confirmation),
+# quitte l'app, puis supprime l'app, ses fichiers et ses réglages. Les autres hooks ne sont pas touchés.
+#   curl -fsSL https://raw.githubusercontent.com/Raaaphhh/Noticode/main/uninstall.sh | sh
+# Option : --dry-run pour seulement afficher ce qui serait fait (via curl : `| sh -s -- --dry-run`).
+set -eu
+
+BUNDLE_ID="com.noticode.app"
+SETTINGS="$HOME/.claude/settings.json"
+DRY_RUN=0
+NL="
+"
+
+ask() {
+    printf '%s [o/N] ' "$1"
+    read -r answer </dev/tty || answer=""
+    case "$answer" in o|O|oui|y|Y|yes) return 0 ;; *) return 1 ;; esac
+}
+
+# Tout est dans une fonction appelée à la fin : avec `curl | sh`, le script entier est lu avant de commencer.
+main() {
+    [ "${1:-}" = "--dry-run" ] && DRY_RUN=1
+    # Fichiers et dossiers à supprimer (seulement ceux qui existent).
+    targets=""
+    for path in "/Applications/Noticode.app" "$HOME/Applications/Noticode.app"; do
+        [ -d "$path" ] || continue
+        # Seulement notre app, jamais une autre du même nom.
+        id=$(defaults read "$path/Contents/Info" CFBundleIdentifier 2>/dev/null || true)
+        [ "$id" = "$BUNDLE_ID" ] && targets="$targets$NL$path"
+    done
+    for path in "$HOME/Library/Application Support/Noticode" \
+                "$HOME/Library/Preferences/$BUNDLE_ID.plist" \
+                "$HOME/Library/Caches/$BUNDLE_ID" \
+                "$HOME/Library/HTTPStorages/$BUNDLE_ID" \
+                "$HOME/Library/Saved Application State/$BUNDLE_ID.savedState"; do
+        [ -e "$path" ] && targets="$targets$NL$path"
+    done
+
+    # 1. Hooks : on calcule le nouveau settings.json sans les commandes noticode-hook.sh (comme l'app).
+    if [ -f "$SETTINGS" ]; then
+        command -v python3 >/dev/null 2>&1 \
+            || { echo "python3 introuvable : retire d'abord les hooks avec le menu de Noticode." >&2; exit 1; }
+        snapshot=$(mktemp)
+        proposed=$(mktemp)
+        trap 'rm -f "$snapshot" "$proposed"' EXIT
+        cp "$SETTINGS" "$snapshot"
+
+        if python3 - "$snapshot" "$proposed" <<'PY'
+import difflib, json, sys
+
+source, output = sys.argv[1], sys.argv[2]
+with open(source, encoding="utf-8") as f:
+    settings = json.load(f)
+
+def is_ours(hook):
+    return "noticode-hook.sh" in str(hook.get("command", ""))
+
+hooks = settings.get("hooks")
+changed = False
+if isinstance(hooks, dict):
+    for event in list(hooks):
+        groups = hooks[event]
+        if not isinstance(groups, list):
+            continue
+        kept = []
+        for group in groups:
+            inner = group.get("hooks", []) if isinstance(group, dict) else []
+            rest = [h for h in inner if not (isinstance(h, dict) and is_ours(h))]
+            if len(rest) == len(inner):
+                kept.append(group)
+                continue
+            changed = True
+            if rest:
+                kept.append({**group, "hooks": rest})
+        if kept:
+            hooks[event] = kept
+        else:
+            del hooks[event]
+    if not hooks:
+        del settings["hooks"]
+
+if not changed:
+    sys.exit(1)
+
+def dump(value):
+    return json.dumps(value, indent=2, ensure_ascii=False, sort_keys=True) + "\n"
+
+with open(source, encoding="utf-8") as f:
+    before = dump(json.load(f))
+after = dump(settings)
+with open(output, "w", encoding="utf-8") as f:
+    f.write(after)
+sys.stdout.writelines(difflib.unified_diff(before.splitlines(True), after.splitlines(True),
+                                           "settings.json (actuel)", "settings.json (après)"))
+PY
+        then
+            echo
+            echo "Modifications de $SETTINGS ci-dessus (fichier réécrit avec ses clés triées ; sauvegarde datée avant)."
+            if [ "$DRY_RUN" = 1 ]; then
+                echo "(--dry-run : hooks non retirés)"
+            elif ask "Retirer les hooks Noticode ?"; then
+                cmp -s "$SETTINGS" "$snapshot" \
+                    || { echo "settings.json a changé entre-temps : relance le script." >&2; exit 1; }
+                backup="$SETTINGS.bak-$(date +%Y%m%d-%H%M%S)"
+                [ -e "$backup" ] && backup="$backup-$$"
+                cp -p "$SETTINGS" "$backup"
+                # Mêmes droits que l'original, puis remplacement en une fois (jamais de fichier incomplet).
+                temporary="$SETTINGS.noticode-tmp"
+                cp "$proposed" "$temporary"
+                chmod "$(stat -f %Lp "$SETTINGS")" "$temporary"
+                mv -f "$temporary" "$SETTINGS"
+                echo "Hooks retirés. Sauvegarde : $backup"
+            else
+                echo "Hooks conservés : désinstallation annulée (sans Noticode, ils ne feraient rien d'utile)."
+                exit 1
+            fi
+        else
+            echo "Aucun hook Noticode dans $SETTINGS."
+        fi
+    fi
+
+    # 2. App et fichiers
+    if [ -z "$targets" ]; then
+        echo "Aucun fichier de Noticode à supprimer."
+        exit 0
+    fi
+    echo
+    echo "À supprimer :$targets"
+    if [ "$DRY_RUN" = 1 ]; then
+        echo "(--dry-run : rien n'a été supprimé)"
+        exit 0
+    fi
+    ask "Supprimer ces éléments ?" || { echo "Rien n'a été supprimé."; exit 0; }
+
+    pkill -x Noticode 2>/dev/null || true
+    defaults delete "$BUNDLE_ID" 2>/dev/null || true
+    echo "$targets" | while IFS= read -r path; do
+        [ -n "$path" ] && rm -rf "$path"
+    done
+    echo "Noticode est désinstallé."
+}
+
+main "$@"

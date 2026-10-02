@@ -1,0 +1,8 @@
+*.xcodeproj
+build/
+DerivedData/
+.DS_Store
+
+# Notes de travail internes (restent en local)
+SUIVI-PROJET.md
+CLAUDE.md

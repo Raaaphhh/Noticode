@@ -1,0 +1,363 @@
+{
+ "surface": {
+  "type": "cube",
+  "width": 242.06054687500003,
+  "height": 242.06054687500003,
+  "depth": 110.2804129464286,
+  "roundness": 0.1978515625
+ },
+ "bodyNodes": [
+  {
+   "id": "shape-d1755b8d-1f95-4b49-9713-2dde3c471db0",
+   "name": "Cube 1",
+   "surface": {
+    "type": "cube",
+    "width": 83.30000000000001,
+    "height": 83.30000000000001,
+    "depth": 74.80000000000001,
+    "roundness": 0.15390625
+   },
+   "position": [
+    -138.99651236961955,
+    41.92567955956143,
+    5.956850207432207
+   ],
+   "rotation": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "id": "shape-7475c37b-8f68-409b-beea-798a316f81ee",
+   "name": "Cube 2",
+   "surface": {
+    "type": "cube",
+    "width": 83.30000000000001,
+    "height": 83.30000000000001,
+    "depth": 74.80000000000001,
+    "roundness": 0.1829296875
+   },
+   "position": [
+    145.80613843519853,
+    41.66817335984557,
+    -4.843015153463021
+   ],
+   "rotation": [
+    0,
+    0,
+    0
+   ]
+  }
+ ],
+ "colors": {
+  "body": "#3c4a72",
+  "eyes": "#111316"
+ },
+ "expressions": {
+  "expression-02": {
+   "id": "expression-02",
+   "headX": -15.287109375000002,
+   "headY": 15.006640625,
+   "headZ": 12.787890625,
+   "widthLeft": 28.991034684534057,
+   "widthRight": 28.991034684534057,
+   "heightLeft": 98.18203125,
+   "heightRight": 98.18203125,
+   "spacing": 66.82734375000001,
+   "positionXLeft": 0.035937500000000004,
+   "positionXRight": 0.035937500000000004,
+   "positionYLeft": 0,
+   "positionYRight": 0,
+   "leftAngle": 0,
+   "rightAngle": 0,
+   "perspective": 1,
+   "eyeMotion": "none",
+   "bodyMotion": "none"
+  },
+  "expression-08": {
+   "id": "expression-08",
+   "headX": -12.303515625,
+   "headY": -17.601171875,
+   "headZ": 5.9109375,
+   "widthLeft": 18.34298780953405,
+   "widthRight": 18.34298780953405,
+   "heightLeft": 69.23124999999999,
+   "heightRight": 69.23124999999999,
+   "spacing": 53.02734375,
+   "positionXLeft": 0.035937500000000004,
+   "positionXRight": 0.035937500000000004,
+   "positionYLeft": 0,
+   "positionYRight": 0,
+   "leftAngle": 23.523046875000002,
+   "rightAngle": -24.042578125000002,
+   "perspective": 1,
+   "eyeMotion": "none",
+   "bodyMotion": "none"
+  },
+  "expression-17": {
+   "id": "expression-17",
+   "headX": -4.3953125,
+   "headY": 14.07265625,
+   "headZ": -16.126171874999997,
+   "widthLeft": 16.782274116522267,
+   "widthRight": 16.782274116522267,
+   "heightLeft": 64.83203125,
+   "heightRight": 64.83203125,
+   "spacing": 49.85859375,
+   "positionXLeft": 0.035937500000000004,
+   "positionXRight": 0.035937500000000004,
+   "positionYLeft": 0,
+   "positionYRight": 0,
+   "leftAngle": 26.2921875,
+   "rightAngle": -20.249218750000004,
+   "perspective": 1,
+   "eyeMotion": "none",
+   "bodyMotion": "none"
+  },
+  "expression-03": {
+   "id": "expression-03",
+   "headX": 2.9468749999999986,
+   "headY": -16.051171875,
+   "headZ": -20.916015625,
+   "widthLeft": 49.42049566606454,
+   "widthRight": 49.42049566606454,
+   "heightLeft": 73.20186921296296,
+   "heightRight": 73.20186921296296,
+   "spacing": 69.02734375,
+   "positionXLeft": 0.035937500000000004,
+   "positionXRight": 0.035937500000000004,
+   "positionYLeft": 0,
+   "positionYRight": 0,
+   "leftAngle": 0,
+   "rightAngle": 0,
+   "perspective": 1,
+   "eyeMotion": "none",
+   "bodyMotion": "none"
+  },
+  "expression-21": {
+   "id": "expression-21",
+   "headX": -5.428125,
+   "headY": -11.71328125,
+   "headZ": -13.472265625000002,
+   "widthLeft": 49.13712843453406,
+   "widthRight": 48.23712843453406,
+   "heightLeft": 71.56132812499999,
+   "heightRight": 70.861328125,
+   "spacing": 67.12734375,
+   "positionXLeft": 0.035937500000000004,
+   "positionXRight": 0.035937500000000004,
+   "positionYLeft": 0,
+   "positionYRight": 0,
+   "leftAngle": 0,
+   "rightAngle": 0,
+   "perspective": 1,
+   "eyeMotion": "none",
+   "bodyMotion": "none"
+  },
+  "expression-00": {
+   "id": "expression-00",
+   "headX": 7.3,
+   "headY": 27.8,
+   "headZ": -16.1,
+   "widthLeft": 20.238300309534054,
+   "widthRight": 20.238300309534054,
+   "heightLeft": 63.83906249999998,
+   "heightRight": 63.83906249999998,
+   "spacing": 52.427343750000006,
+   "positionXLeft": 0.035937500000000004,
+   "positionXRight": 0.035937500000000004,
+   "positionYLeft": -20.5,
+   "positionYRight": -20.5,
+   "leftAngle": 0,
+   "rightAngle": 0,
+   "perspective": 1,
+   "eyeMotion": "none",
+   "bodyMotion": "none"
+  },
+  "expression-15": {
+   "id": "expression-15",
+   "headX": 0.31914062500000184,
+   "headY": 35.307421874999996,
+   "headZ": -10.904296875,
+   "widthLeft": 20.198065934534057,
+   "widthRight": 20.198065934534057,
+   "heightLeft": 61.28203124999999,
+   "heightRight": 61.28203124999999,
+   "spacing": 52.02734375,
+   "positionXLeft": 0.035937500000000004,
+   "positionXRight": 0.035937500000000004,
+   "positionYLeft": 0,
+   "positionYRight": 0,
+   "leftAngle": 0,
+   "rightAngle": 0,
+   "perspective": 1,
+   "eyeMotion": "none",
+   "bodyMotion": "none"
+  },
+  "expression-11": {
+   "id": "expression-11",
+   "headX": -2.092968750000001,
+   "headY": -15.899609374999999,
+   "headZ": -14.469921875,
+   "widthLeft": 31.937996094266197,
+   "widthRight": 31.937996094266197,
+   "heightLeft": 106.79218750000001,
+   "heightRight": 104.63908480660692,
+   "spacing": 57.541796875,
+   "positionXLeft": 0.035937500000000004,
+   "positionXRight": 0.035937500000000004,
+   "positionYLeft": 0,
+   "positionYRight": 0,
+   "leftAngle": 0,
+   "rightAngle": 0,
+   "perspective": 1,
+   "eyeMotion": "none",
+   "bodyMotion": "none"
+  },
+  "expression-19": {
+   "id": "expression-19",
+   "headX": -6.077734375000001,
+   "headY": -11.03515625,
+   "headZ": -13.965625000000001,
+   "widthLeft": 20.78283155953406,
+   "widthRight": 20.78283155953406,
+   "heightLeft": 80.146484375,
+   "heightRight": 80.146484375,
+   "spacing": 54.32734375000001,
+   "positionXLeft": 0.035937500000000004,
+   "positionXRight": 0.035937500000000004,
+   "positionYLeft": 0,
+   "positionYRight": 0,
+   "leftAngle": 0,
+   "rightAngle": 0,
+   "perspective": 1,
+   "eyeMotion": "none",
+   "bodyMotion": "none"
+  }
+ },
+ "animations": {
+  "celebrate": {
+   "blink": {
+    "enabled": true,
+    "initialDelayMs": 1200,
+    "minIntervalMs": 1800,
+    "maxIntervalMs": 3600,
+    "durationMs": 220
+   },
+   "steps": [
+    {
+     "expressionId": "expression-02",
+     "holdMs": 2300,
+     "transitionMs": 500,
+     "transition": "smooth"
+    },
+    {
+     "expressionId": "expression-08",
+     "holdMs": 2300,
+     "transitionMs": 500,
+     "transition": "smooth"
+    },
+    {
+     "expressionId": "expression-17",
+     "holdMs": 2300,
+     "transitionMs": 500,
+     "transition": "smooth"
+    }
+   ]
+  },
+  "curious": {
+   "blink": {
+    "enabled": true,
+    "initialDelayMs": 2100,
+    "minIntervalMs": 2800,
+    "maxIntervalMs": 5000,
+    "durationMs": 260
+   },
+   "steps": [
+    {
+     "expressionId": "expression-03",
+     "holdMs": 2300,
+     "transitionMs": 500,
+     "transition": "smooth"
+    },
+    {
+     "expressionId": "expression-21",
+     "holdMs": 2300,
+     "transitionMs": 500,
+     "transition": "smooth"
+    },
+    {
+     "expressionId": "expression-00",
+     "holdMs": 2300,
+     "transitionMs": 500,
+     "transition": "smooth"
+    },
+    {
+     "expressionId": "expression-15",
+     "holdMs": 2300,
+     "transitionMs": 500,
+     "transition": "smooth"
+    }
+   ]
+  },
+  "scared": {
+   "blink": {
+    "enabled": true,
+    "initialDelayMs": 1200,
+    "minIntervalMs": 1800,
+    "maxIntervalMs": 3600,
+    "durationMs": 220
+   },
+   "steps": [
+    {
+     "expressionId": "expression-03",
+     "holdMs": 2300,
+     "transitionMs": 500,
+     "transition": "smooth"
+    },
+    {
+     "expressionId": "expression-21",
+     "holdMs": 2300,
+     "transitionMs": 500,
+     "transition": "smooth"
+    }
+   ]
+  },
+  "happy": {
+   "blink": {
+    "enabled": true,
+    "initialDelayMs": 2100,
+    "minIntervalMs": 2800,
+    "maxIntervalMs": 5000,
+    "durationMs": 260
+   },
+   "steps": [
+    {
+     "expressionId": "expression-02",
+     "holdMs": 2300,
+     "transitionMs": 500,
+     "transition": "smooth"
+    },
+    {
+     "expressionId": "expression-11",
+     "holdMs": 2300,
+     "transitionMs": 500,
+     "transition": "smooth"
+    },
+    {
+     "expressionId": "expression-17",
+     "holdMs": 2300,
+     "transitionMs": 500,
+     "transition": "smooth"
+    },
+    {
+     "expressionId": "expression-19",
+     "holdMs": 2300,
+     "transitionMs": 500,
+     "transition": "smooth"
+    }
+   ]
+  }
+ }
+}
