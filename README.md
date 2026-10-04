@@ -11,7 +11,7 @@ Petite app macOS qui affiche dans le **notch** ce que fait [Claude Code](https:/
 
 ## Ce que montre le notch
 
-Le notch s'élargit à peine, à sa propre hauteur : Notiboy et un mot de couleur à gauche, le projet à droite (« +2 » si d'autres notifications attendent). Quand tu dois agir, une ligne de détail s'ajoute dessous. Le bord du bas se vide pendant le temps d'affichage ; garde la souris sur le notch pour arrêter le temps et lire le détail en entier.
+Le notch s'élargit à peine, à sa propre hauteur : Notiboy et un mot de couleur à gauche, le projet à droite (« +2 » si d'autres notifications attendent). Quand tu dois agir, une ligne de détail s'ajoute dessous. Le bord du bas se vide pendant le temps d'affichage ; garde la souris sur le notch pour arrêter le temps (30 s au plus) et lire le détail en entier.
 
 - **Terminé** (vert) : Claude a fini de répondre.
 - **Autoriser ?** (ambre) : Claude veut utiliser un outil ; l'outil (Bash, Edit…) et la commande ou le fichier s'affichent dessous.

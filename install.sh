@@ -72,6 +72,8 @@ main() {
 
     if [ "$update" = 1 ]; then
         echo "Noticode est à jour ($target)."
+    elif grep -qsF "noticode-hook.sh" "$HOME/.claude/settings.json"; then
+        echo "Noticode est installé dans $target (hooks Claude Code déjà en place)."
     else
         echo "Noticode est installé dans $target"
         cat <<EOF

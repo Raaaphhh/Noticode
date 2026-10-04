@@ -16,9 +16,13 @@ extension NoticeEvent {
         case "Stop":
             self.init(kind: .finished, project: project, sessionID: sessionID, autoMode: autoMode)
         case "StopFailure":
-            let error = Self.errorMessage(type: json["error_type"] as? String)
-                ?? Self.firstText(in: json, keys: ["error_details", "message", "error_type"])
-            self.init(kind: .error, project: project, detail: error, sessionID: sessionID, autoMode: autoMode)
+            // Phrase traduite suivie du détail d'origine (ex. heure de réinitialisation d'une limite).
+            let phrase = Self.errorMessage(type: json["error_type"] as? String) ?? ""
+            let details = Self.firstText(in: json, keys: ["error_details", "message"])
+            let error = [phrase, details].filter { !$0.isEmpty }.joined(separator: " — ")
+            self.init(kind: .error, project: project,
+                      detail: error.isEmpty ? Self.firstText(in: json, keys: ["error_type"]) : error,
+                      sessionID: sessionID, autoMode: autoMode)
         case "PermissionRequest":
             // Arrive tout de suite, contrairement à la notification `permission_prompt`.
             let tool = json["tool_name"] as? String ?? ""
@@ -32,7 +36,7 @@ extension NoticeEvent {
                       project: project,
                       detail: detail,
                       detailStyle: path.isEmpty ? .code : .path,
-                      tool: tool.isEmpty ? "Outil" : tool,
+                      tool: tool.isEmpty ? "Outil" : Self.shortToolName(tool),
                       sessionID: sessionID, autoMode: autoMode)
         case "Notification":
             // `permission_prompt` est déjà couvert par PermissionRequest (sinon double affichage) ;
@@ -55,7 +59,7 @@ extension NoticeEvent {
     /// Phrase en français pour les erreurs courantes de `StopFailure` ; nil si le type est inconnu (on garde le message brut).
     private static func errorMessage(type: String?) -> String? {
         switch type {
-        case "rate_limit": "Limite d'utilisation atteinte, Claude reprendra après la réinitialisation."
+        case "rate_limit": "Limite d'utilisation atteinte."
         case "overloaded", "overloaded_error": "Serveurs surchargés, réessaie dans un moment."
         case "authentication_failed", "authentication_error": "Connexion à Claude refusée : reconnecte-toi."
         case "billing_error": "Problème de facturation sur le compte."
@@ -63,6 +67,12 @@ extension NoticeEvent {
         case "max_output_tokens": "Réponse coupée : longueur maximale atteinte."
         default: nil
         }
+    }
+
+    /// Nom d'outil assez court pour l'étiquette : `mcp__serveur__outil` → `outil`, coupé au-delà de 24 caractères.
+    private static func shortToolName(_ name: String) -> String {
+        let short = name.components(separatedBy: "__").last { !$0.isEmpty } ?? name
+        return short.count > 24 ? String(short.prefix(23)) + "…" : short
     }
 
     /// Premier texte non vide parmi les clés données, nettoyé et borné (le notch n'affiche que quelques lignes).

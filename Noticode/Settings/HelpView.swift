@@ -29,7 +29,7 @@ struct HelpView: View {
             }
 
             Section("Fermer une notification") {
-                Text("Glisse vers le haut sur le notch : deux doigts sur le trackpad, ou clic maintenu puis vers le haut. Sinon il se ferme seul quand le bord du bas s'est vidé (durée réglable dans l'onglet Réglages). Garder la souris dessus arrête le temps et déplie le détail.")
+                Text("Glisse vers le haut sur le notch : deux doigts sur le trackpad, ou clic maintenu puis vers le haut. Sinon il se ferme seul quand le bord du bas s'est vidé (durée réglable dans l'onglet Réglages). Garder la souris dessus arrête le temps (30 s au plus) et déplie le détail.")
             }
 
             Section {

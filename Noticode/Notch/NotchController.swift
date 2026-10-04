@@ -3,11 +3,13 @@ import SwiftUI
 
 /// Affiche les événements dans le notch, puis le referme.
 /// Un nouvel événement remplace tout de suite celui affiché ; en rafale, chacun reste visible au moins `minimumDisplay`.
-/// Tant que la souris est sur la forme, le temps s'arrête et rien ne remplace l'événement affiché.
+/// Tant que la souris est sur la forme, le temps s'arrête et rien ne remplace l'événement affiché
+/// (au plus `maxHoverPause` par événement : une souris oubliée sur une aile ne bloque pas la file).
 @MainActor
 final class NotchController {
     private let closeAnimationDuration: Duration = .milliseconds(600)
     private let minimumDisplay = 1.5
+    private let maxHoverPause = 30.0
     /// Au-delà, les plus anciens en attente sont abandonnés (ils seraient périmés).
     private let maxPending = 5
 
@@ -81,24 +83,26 @@ final class NotchController {
     }
 
     /// Seul, l'événement reste son temps complet ; si un autre attend, seulement `minimumDisplay` (pour avoir le temps de le voir).
-    /// Pendant le survol, le temps ne compte pas et rien ne remplace l'événement. Un geste de fermeture coupe court.
+    /// Pendant le survol (au plus `maxHoverPause`), le temps ne compte pas et rien ne remplace l'événement. Un geste de fermeture coupe court.
     /// L'échéance est recalculée à chaque réveil (`show`, geste, début ou fin du survol).
     private func waitWhileShown() async {
         dismissed = false
         var elapsed = 0.0 // temps affiché hors survol
+        var paused = 0.0 // temps passé en pause au survol
         while !dismissed {
             let left = (pending.isEmpty ? model.displaySeconds : minimumDisplay) - elapsed
-            let running = !model.isHovered
+            let running = !model.isHovered || paused >= maxHoverPause
             guard left > 0 || !running else { return }
             model.countdown = CountdownState(fraction: max(0, min(left / model.displaySeconds, 1)),
                                              seconds: max(0, left), running: running)
             let start = Date()
-            // Pendant le survol, pas d'échéance : la fin du survol réveille.
-            let sleep = Task { _ = try? await Task.sleep(for: .seconds(running ? left : 3600)) }
+            // Pendant le survol, la fin du survol réveille, sinon la fin de la pause permise.
+            let sleep = Task { _ = try? await Task.sleep(for: .seconds(running ? left : maxHoverPause - paused)) }
             sleepTask = sleep
             await sleep.value
             sleepTask = nil
-            if running { elapsed += Date().timeIntervalSince(start) }
+            let spent = Date().timeIntervalSince(start)
+            if running { elapsed += spent } else { paused += spent }
         }
     }
 

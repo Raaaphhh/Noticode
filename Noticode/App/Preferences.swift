@@ -33,7 +33,8 @@ enum Preferences {
     /// Reprend une seule fois les réglages de l'ancien identifiant, puis les efface.
     static func migrateFromLegacyBundleID() {
         let defaults = UserDefaults.standard
-        guard let old = defaults.persistentDomain(forName: legacyBundleID) else { return }
+        // Un plist vide peut rester après l'effacement : rien à reprendre.
+        guard let old = defaults.persistentDomain(forName: legacyBundleID), !old.isEmpty else { return }
         let keys = [mutedKey, volumeKey, durationKey, launchOnSessionStartKey, layoutKey]
         for key in keys where defaults.object(forKey: key) == nil {
             if let value = old[key] { defaults.set(value, forKey: key) }
