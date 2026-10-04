@@ -9,6 +9,8 @@ enum Preferences {
     static let layoutKey = "notchLayout"
 
     static let defaultVolume = 0.5
+    static let defaultDuration = DisplayDuration.normal
+    static let defaultLayout = NotchLayout.compact
 
     /// Volume des sons, de 0 à 1.
     static var volume: Double {
@@ -16,11 +18,11 @@ enum Preferences {
     }
 
     static var duration: DisplayDuration {
-        DisplayDuration(rawValue: UserDefaults.standard.string(forKey: durationKey) ?? "") ?? .normal
+        DisplayDuration(rawValue: UserDefaults.standard.string(forKey: durationKey) ?? "") ?? defaultDuration
     }
 
     static var layout: NotchLayout {
-        NotchLayout(rawValue: UserDefaults.standard.string(forKey: layoutKey) ?? "") ?? .compact
+        NotchLayout(rawValue: UserDefaults.standard.string(forKey: layoutKey) ?? "") ?? defaultLayout
     }
 
     static var launchOnSessionStart: Bool {

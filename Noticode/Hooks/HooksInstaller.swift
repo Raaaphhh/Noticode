@@ -106,7 +106,7 @@ enum HooksInstaller {
         let settingsURL = change.settingsURL
         guard try readData(settingsURL) == change.oldData else { throw HooksInstallerError.settingsChanged }
         var backup: URL?
-        var permissions = NSNumber(value: 0o644)
+        var permissions = NSNumber(value: 0o600) // nouveau fichier : réservé à l'utilisateur
 
         if fileManager.fileExists(atPath: settingsURL.path) {
             let formatter = DateFormatter()

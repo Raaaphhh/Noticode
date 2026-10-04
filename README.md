@@ -31,7 +31,7 @@ Prérequis : macOS 14 (Sonoma) ou plus récent et [Xcode](https://apps.apple.com
    curl -fsSL https://raw.githubusercontent.com/Raaaphhh/Noticode/main/install.sh | sh
    ```
 
-   Le script télécharge la dernière version, compile l'app sur ton Mac (une à deux minutes, aucun compte Apple nécessaire), l'installe dans `/Applications` (ou `~/Applications` si tu n'as pas les droits) puis l'ouvre. L'icône de Notiboy apparaît dans la barre des menus.
+   Le script télécharge la dernière version publiée, compile l'app sur ton Mac (une à deux minutes, aucun compte Apple nécessaire), l'installe dans `/Applications` (ou `~/Applications` si tu n'as pas les droits) puis l'ouvre. L'icône de Notiboy apparaît dans la barre des menus.
 
 2. **Installe les hooks** (une seule fois) : icône Noticode dans la barre des menus › **Installer les hooks Claude Code…**. Noticode montre les lignes ajoutées à `~/.claude/settings.json` et n'écrit qu'après ta confirmation, avec une sauvegarde datée du fichier. Les hooks déjà présents (d'autres outils) sont conservés.
 
@@ -51,7 +51,7 @@ Icône dans la barre des menus › **Réglages…** :
 
 ## Mise à jour
 
-La même commande que pour l'installation : elle remplace l'app par la dernière version et la relance.
+La même commande que pour l'installation : elle remplace l'app par la dernière version publiée (dernier tag `vX.Y.Z` du dépôt) et la relance.
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/Raaaphhh/Noticode/main/install.sh | sh

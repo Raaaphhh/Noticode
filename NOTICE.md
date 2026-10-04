@@ -56,6 +56,7 @@ SOFTWARE.
 
 - **Notiboy** (formes, couleurs, expressions, animations ; `Noticode/Resources/notiboy/notiboy.json`,
   icônes de l'app et de la barre de menus) : créé par Raphaël Descamps avec Bible Strong Avatar Lab.
-  Même licence que le projet.
+  Même licence que le projet. `notiboy.json` est la forme sous laquelle Notiboy est distribué et
+  modifié dans ce dépôt ; s'il est un jour retravaillé dans l'Avatar Lab, l'export du Lab sera ajouté ici.
 - **Sons** (`Noticode/Resources/sounds/`) : synthétisés pour le projet (aucun échantillon extérieur,
   réverbération Freeverb de Jezar, domaine public), même licence que le projet.

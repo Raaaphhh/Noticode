@@ -1,7 +1,7 @@
 #!/bin/sh
 # Installe ou met à jour Noticode (compilé sur ce Mac) dans /Applications (ou ~/Applications).
 #   curl -fsSL https://raw.githubusercontent.com/Raaaphhh/Noticode/main/install.sh | sh
-# Lancé depuis un dossier des sources, il compile ces sources ; sinon il télécharge la dernière version.
+# Lancé depuis un dossier des sources, il compile ces sources ; sinon il télécharge la dernière version publiée.
 # Prérequis : macOS 14+, Xcode. xcodegen est installé avec Homebrew s'il manque.
 set -eu
 
@@ -27,14 +27,19 @@ main() {
 
     # 2. Sources : ce dossier s'il en contient, sinon une copie temporaire de la dernière version.
     work=$(mktemp -d)
-    trap 'rm -rf "$work"' EXIT
+    staging=""  # copie en cours dans le dossier des apps (étape 4), retirée si le script s'arrête avant la fin
+    trap 'rm -rf "$work" ${staging:+"$staging"}' EXIT
     here=""
     case "$0" in */install.sh | install.sh) here=$(cd "$(dirname "$0")" && pwd) ;; esac  # sinon : lu via `curl | sh`
     if [ -n "$here" ] && [ -f "$here/project.yml" ] && [ -d "$here/Noticode" ]; then
         src="$here"
     else
-        echo "Téléchargement de Noticode…"
-        git clone --quiet --depth 1 "$REPO" "$work/src" </dev/null || fail "téléchargement impossible depuis $REPO."
+        # Dernière version publiée (tag vX.Y.Z) ; sans tag, la tête de main.
+        ref=$(git ls-remote --tags --refs "$REPO" 'v*' </dev/null | sed 's|.*refs/tags/||' | grep '^v[0-9]' | sort -V | tail -n 1)
+        ref=${ref:-main}
+        echo "Téléchargement de Noticode ($ref)…"
+        git -c advice.detachedHead=false clone --quiet --depth 1 --branch "$ref" "$REPO" "$work/src" </dev/null \
+            || fail "téléchargement impossible depuis $REPO."
         src="$work/src"
         [ -f "$src/project.yml" ] || fail "$REPO ne contient pas les sources de Noticode."
     fi

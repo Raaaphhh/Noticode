@@ -4,8 +4,8 @@ struct SettingsView: View {
     let sounds: SoundPlayer
 
     @AppStorage(Preferences.volumeKey) private var volume = Preferences.defaultVolume
-    @AppStorage(Preferences.durationKey) private var duration = DisplayDuration.normal
-    @AppStorage(Preferences.layoutKey) private var layout = NotchLayout.compact
+    @AppStorage(Preferences.durationKey) private var duration = Preferences.defaultDuration
+    @AppStorage(Preferences.layoutKey) private var layout = Preferences.defaultLayout
     @AppStorage(Preferences.launchOnSessionStartKey) private var launchOnSessionStart = false
     @State private var hooksInstalled = HooksInstaller.isInstalled
 

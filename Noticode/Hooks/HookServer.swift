@@ -27,7 +27,7 @@ final class HookServer: Sendable {
         var address = sockaddr_un()
         address.sun_family = sa_family_t(AF_UNIX)
         let pathBytes = Array(path.utf8CString)
-        guard pathBytes.count <= MemoryLayout.size(ofValue: address.sun_path) else { close(server); return fail("chemin trop long") }
+        guard pathBytes.count <= MemoryLayout.size(ofValue: address.sun_path) else { return fail("chemin trop long", closing: server) }
         withUnsafeMutableBytes(of: &address.sun_path) { buffer in
             for (index, byte) in pathBytes.enumerated() { buffer[index] = UInt8(bitPattern: byte) }
         }
@@ -37,9 +37,9 @@ final class HookServer: Sendable {
                 bind(server, $0, socklen_t(MemoryLayout<sockaddr_un>.size))
             }
         }
-        guard bound == 0 else { close(server); return fail("bind") }
+        guard bound == 0 else { return fail("bind", closing: server) }
         chmod(path, 0o600) // seul l'utilisateur peut écrire dans le socket
-        guard Darwin.listen(server, 8) == 0 else { close(server); return fail("listen") }
+        guard Darwin.listen(server, 8) == 0 else { return fail("listen", closing: server) }
 
         while true {
             let client = accept(server, nil, nil)
@@ -47,12 +47,14 @@ final class HookServer: Sendable {
             if errno == EINTR || errno == ECONNABORTED { continue } // passager : on continue d'écouter
             break
         }
-        close(server)
-        fail("accept")
+        fail("accept", closing: server)
     }
 
-    private func fail(_ step: String) {
-        NSLog("Noticode : serveur des hooks arrêté (\(step), errno \(errno))")
+    /// `errno` est lu avant `close`, qui peut le modifier.
+    private func fail(_ step: String, closing socket: Int32? = nil) {
+        let code = errno
+        if let socket { close(socket) }
+        NSLog("Noticode : serveur des hooks arrêté (\(step), errno \(code))")
     }
 
     /// Lit un message (jusqu'au saut de ligne), le convertit et le transmet.

@@ -28,7 +28,10 @@ enum AppPaths {
         // Aussi pour un dossier déjà existant aux droits plus larges.
         try fileManager.setAttributes([.posixPermissions: 0o700], ofItemAtPath: supportDir.path)
 
-        guard let source = Bundle.main.url(forResource: "noticode-hook", withExtension: "sh") else { return }
+        guard let source = Bundle.main.url(forResource: "noticode-hook", withExtension: "sh") else {
+            NSLog("Noticode : script relais absent de l'app, hooks inactifs")
+            return
+        }
         let script = try Data(contentsOf: source)
         guard (try? Data(contentsOf: hookScriptURL)) != script else { return }
         // Fichier temporaire déjà exécutable, puis renommage : un hook lancé pendant ce temps
