@@ -19,8 +19,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// la copie qu'on vient de lancer (Debug ou Release) remplace l'ancienne.
     private func quitOtherInstances() {
         guard let bundleID = Bundle.main.bundleIdentifier else { return }
-        for app in NSRunningApplication.runningApplications(withBundleIdentifier: bundleID) where app != .current {
-            app.terminate()
+        for id in [bundleID, Preferences.legacyBundleID] {
+            for app in NSRunningApplication.runningApplications(withBundleIdentifier: id) where app != .current {
+                app.terminate()
+            }
         }
     }
 

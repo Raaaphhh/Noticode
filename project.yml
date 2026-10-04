@@ -1,6 +1,6 @@
 name: Noticode
 options:
-  bundleIdPrefix: com.noticode
+  bundleIdPrefix: io.github.raaaphhh
   deploymentTarget:
     macOS: "14.0"
 settings:
@@ -24,7 +24,7 @@ targets:
         LSUIElement: true   # pas d'icône dans le Dock, seulement la barre de menus
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.noticode.app
+        PRODUCT_BUNDLE_IDENTIFIER: io.github.raaaphhh.noticode
         GENERATE_INFOPLIST_FILE: NO
         INFOPLIST_FILE: Noticode/Info.plist
         CODE_SIGN_STYLE: Automatic

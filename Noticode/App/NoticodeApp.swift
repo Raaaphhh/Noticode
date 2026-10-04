@@ -6,6 +6,7 @@ enum NoticodeApp {
     @MainActor static let delegate = AppDelegate()
 
     @MainActor static func main() {
+        Preferences.migrateFromLegacyBundleID() // avant de créer le delegate, qui lit déjà les réglages
         let app = NSApplication.shared
         app.delegate = delegate
         app.run()

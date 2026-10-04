@@ -6,7 +6,8 @@
 set -eu
 
 REPO="https://github.com/Raaaphhh/Noticode.git"
-BUNDLE_ID="com.noticode.app"
+BUNDLE_ID="io.github.raaaphhh.noticode"
+OLD_BUNDLE_ID="com.noticode.app"  # identifiant avant le 2026-10-04
 
 fail() { echo "Erreur : $1" >&2; exit 1; }
 
@@ -55,7 +56,7 @@ main() {
     if [ -d "$target" ]; then
         # On ne remplace qu'une ancienne version de Noticode, jamais une autre app du même nom.
         existing=$(defaults read "$target/Contents/Info" CFBundleIdentifier 2>/dev/null || true)
-        [ "$existing" = "$BUNDLE_ID" ] || fail "$target existe mais n'est pas Noticode : rien n'a été modifié."
+        [ "$existing" = "$BUNDLE_ID" ] || [ "$existing" = "$OLD_BUNDLE_ID" ] || fail "$target existe mais n'est pas Noticode : rien n'a été modifié."
         update=1
     fi
     # Copie à côté d'abord : si elle échoue, l'ancienne version reste en place.

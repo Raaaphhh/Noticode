@@ -26,6 +26,20 @@ enum Preferences {
     static var launchOnSessionStart: Bool {
         UserDefaults.standard.bool(forKey: launchOnSessionStartKey)
     }
+
+    /// Identifiant de l'app avant le 2026-10-04 (ses réglages étaient rangés sous ce nom).
+    static let legacyBundleID = "com.noticode.app"
+
+    /// Reprend une seule fois les réglages de l'ancien identifiant, puis les efface.
+    static func migrateFromLegacyBundleID() {
+        let defaults = UserDefaults.standard
+        guard let old = defaults.persistentDomain(forName: legacyBundleID) else { return }
+        let keys = [mutedKey, volumeKey, durationKey, launchOnSessionStartKey, layoutKey]
+        for key in keys where defaults.object(forKey: key) == nil {
+            if let value = old[key] { defaults.set(value, forKey: key) }
+        }
+        defaults.removePersistentDomain(forName: legacyBundleID)
+    }
 }
 
 /// Durée d'affichage des notifications, appliquée à tous les types (sauf le salut au lancement).

@@ -5,7 +5,7 @@
 # Option : --dry-run pour seulement afficher ce qui serait fait (via curl : `| sh -s -- --dry-run`).
 set -eu
 
-BUNDLE_ID="com.noticode.app"
+BUNDLE_IDS="io.github.raaaphhh.noticode com.noticode.app"  # actuel, puis celui d'avant le 2026-10-04
 SETTINGS="$HOME/.claude/settings.json"
 DRY_RUN=0
 NL="
@@ -31,14 +31,16 @@ main() {
         [ -d "$path" ] || continue
         # Seulement notre app, jamais une autre du même nom.
         id=$(defaults read "$path/Contents/Info" CFBundleIdentifier 2>/dev/null || true)
-        [ "$id" = "$BUNDLE_ID" ] && targets="$targets$NL$path"
+        case " $BUNDLE_IDS " in *" $id "*) targets="$targets$NL$path" ;; esac
     done
-    for path in "$HOME/Library/Application Support/Noticode" \
-                "$HOME/Library/Preferences/$BUNDLE_ID.plist" \
-                "$HOME/Library/Caches/$BUNDLE_ID" \
-                "$HOME/Library/HTTPStorages/$BUNDLE_ID" \
-                "$HOME/Library/Saved Application State/$BUNDLE_ID.savedState"; do
-        [ -e "$path" ] && targets="$targets$NL$path"
+    [ -e "$HOME/Library/Application Support/Noticode" ] && targets="$targets$NL$HOME/Library/Application Support/Noticode"
+    for id in $BUNDLE_IDS; do
+        for path in "$HOME/Library/Preferences/$id.plist" \
+                    "$HOME/Library/Caches/$id" \
+                    "$HOME/Library/HTTPStorages/$id" \
+                    "$HOME/Library/Saved Application State/$id.savedState"; do
+            [ -e "$path" ] && targets="$targets$NL$path"
+        done
     done
 
     # 1. Hooks : on calcule le nouveau settings.json sans les commandes noticode-hook.sh (comme l'app).
@@ -154,7 +156,7 @@ PY
     ask "Supprimer ces éléments ?" || { echo "Rien n'a été supprimé."; exit 0; }
 
     pkill -x Noticode 2>/dev/null || true
-    defaults delete "$BUNDLE_ID" 2>/dev/null || true
+    for id in $BUNDLE_IDS; do defaults delete "$id" 2>/dev/null || true; done
     echo "$targets" | while IFS= read -r path; do
         [ -n "$path" ] && rm -rf "$path"
     done
