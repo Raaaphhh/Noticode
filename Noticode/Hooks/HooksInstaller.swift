@@ -141,7 +141,27 @@ enum HooksInstaller {
             try? fileManager.removeItem(at: temporary)
             throw CocoaError(.fileWriteUnknown)
         }
+        pruneBackups(of: settingsURL)
         return backup
+    }
+
+    /// Garde les `keptBackups` sauvegardes Noticode les plus récentes. Seul notre format de nom
+    /// (`settings.json.bak-yyyyMMdd-HHmmss-SSS`, avec un éventuel `-2`…) est concerné :
+    /// les sauvegardes des autres outils ne sont jamais touchées.
+    private static let keptBackups = 3
+
+    private static func pruneBackups(of settingsURL: URL) {
+        let folder = settingsURL.deletingLastPathComponent()
+        let prefix = settingsURL.lastPathComponent + ".bak-"
+        let ours = /\d{8}-\d{6}-\d{3}(-\d+)?/
+        let names = (try? FileManager.default.contentsOfDirectory(atPath: folder.path)) ?? []
+        let backups = names
+            .filter { $0.hasPrefix(prefix) && $0.dropFirst(prefix.count).wholeMatch(of: ours) != nil }
+            // Le nom commence par la date : tri décroissant = plus récente en tête (`-10` après `-9`).
+            .sorted { $0.localizedStandardCompare($1) == .orderedDescending }
+        for name in backups.dropFirst(keptBackups) {
+            try? FileManager.default.removeItem(at: folder.appendingPathComponent(name))
+        }
     }
 
     // MARK: - Outils
